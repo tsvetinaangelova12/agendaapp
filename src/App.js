@@ -165,25 +165,39 @@ export default function AgendaMaker() {
     const event = copy[evIndex];
     const subs = [...event.subs];
 
+    // Old and new times of the edited subelement
+    const oldTimeStr = subs[subIndex].time;
+    if (oldTimeStr === newTimeStr) return prev;
+
+    const oldTime = parseTime(oldTimeStr);
+    const newTime = parseTime(newTimeStr);
+
+    // Delta in minutes (can be positive or negative)
+    const delta = differenceInMinutes(newTime, oldTime);
+
+    // 1) Update the changed subelement
     subs[subIndex] = { ...subs[subIndex], time: newTimeStr };
+
+    // 2) Shift all following subelements of the SAME main event
+    for (let i = subIndex + 1; i < subs.length; i++) {
+      const t = parseTime(subs[i].time || newTimeStr);
+      subs[i] = {
+        ...subs[i],
+        time: formatTime(addMinutes(t, delta)),
+      };
+    }
+
     copy[evIndex] = { ...event, subs };
 
-    // Check if this change now clashes with the next main event
-    const nextIndex = evIndex + 1;
-    if (nextIndex < copy.length) {
-      const newSubTime = parseTime(newTimeStr);
-      const nextMainTime = parseTime(copy[nextIndex].time);
-
-      if (newSubTime >= nextMainTime) {
-        for (let i = nextIndex; i < copy.length; i++) {
-          copy[i] = shiftEventWithSubs(copy[i], 15);
-        }
-      }
+    // 3) Shift ALL later main events (and their subs) by the same delta
+    for (let i = evIndex + 1; i < copy.length; i++) {
+      copy[i] = shiftEventWithSubs(copy[i], delta);
     }
 
     return copy;
   });
 };
+
 
 
   const removeEvent = (index) => {
