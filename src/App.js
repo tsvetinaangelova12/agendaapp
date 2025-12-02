@@ -21,6 +21,7 @@ export default function AgendaMaker() {
   ]);
   const [darkMode, setDarkMode] = useState(false);
   const [draggingId, setDraggingId] = useState(null);
+  const [draggingSub, setDraggingSub] = useState(null); // { eventId, subId } or null
 
   const parseTime = (hhmm) => parse(hhmm, "HH:mm", new Date());
   const formatTime = (date) => format(date, "HH:mm");
@@ -264,6 +265,48 @@ export default function AgendaMaker() {
   });
 };
 
+  const moveSub = (eventId, fromSubId, toSubId) => {
+  setEvents((prev) => {
+    if (!eventId || !fromSubId || !toSubId || fromSubId === toSubId) return prev;
+
+    const evIndex = prev.findIndex((ev) => ev.id === eventId);
+    if (evIndex === -1) return prev;
+
+    const copy = [...prev];
+    const event = copy[evIndex];
+    const subs = [...event.subs];
+    if (subs.length < 2) return prev;
+
+    const fromIndex = subs.findIndex((s) => s.id === fromSubId);
+    const toIndex = subs.findIndex((s) => s.id === toSubId);
+    if (fromIndex === -1 || toIndex === -1) return prev;
+
+    // Remember original times of subs
+    const originalTimes = subs.map(
+      (s) => s.time || event.time || "08:00"
+    );
+
+    // Sort times chronologically
+    const sortedTimes = [...originalTimes].sort(
+      (a, b) => parseTime(a) - parseTime(b)
+    );
+
+    // Reorder the subs
+    const [movedSub] = subs.splice(fromIndex, 1);
+    subs.splice(toIndex, 0, movedSub);
+
+    // Assign sorted times to subs in their NEW order
+    const newSubs = subs.map((sub, i) => ({
+      ...sub,
+      time: sortedTimes[i],
+    }));
+
+    copy[evIndex] = { ...event, subs: newSubs };
+    return copy;
+  });
+};
+
+
 
   const handleDragStart = (e, id) => {
     setDraggingId(id);
@@ -284,6 +327,32 @@ export default function AgendaMaker() {
   const handleDragEnd = () => {
     setDraggingId(null);
   };
+
+  const handleSubDragStart = (e, eventId, subId) => {
+  setDraggingSub({ eventId, subId });
+  e.dataTransfer.effectAllowed = "move";
+};
+
+const handleSubDragOver = (e) => {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "move";
+};
+
+const handleSubDrop = (e, eventId, targetSubId) => {
+  e.preventDefault();
+  if (!draggingSub) return;
+  if (draggingSub.eventId !== eventId) {
+    setDraggingSub(null);
+    return; // only reorder within the same main event
+  }
+  moveSub(eventId, draggingSub.subId, targetSubId);
+  setDraggingSub(null);
+};
+
+const handleSubDragEnd = () => {
+  setDraggingSub(null);
+};
+
 
   const buildPlainText = () => {
     const lines = [];
@@ -567,7 +636,16 @@ export default function AgendaMaker() {
                       {ev.subs.map((sub, si) => (
                         <div
                           key={sub.id}
-                          className={`flex flex-wrap items-center gap-2 sm:gap-3 rounded-xl border px-3 sm:px-4 py-2 ${subBg}`}
+                          draggable
+                          onDragStart={(e) => handleSubDragStart(e, ev.id, sub.id)}
+                          onDragOver={handleSubDragOver}
+                          onDrop={(e) => handleSubDrop(e, ev.id, sub.id)}
+                          onDragEnd={handleSubDragEnd}
+                          className={`flex flex-wrap items-center gap-2 sm:gap-3 rounded-xl border px-3 sm:px-4 py-2 ${subBg} ${
+                            draggingSub && draggingSub.subId === sub.id
+                              ? "opacity-70 scale-[0.99]"
+                              : ""
+                          }`}
                         >
                           <span className="select-none text-lg leading-none">
                             •
