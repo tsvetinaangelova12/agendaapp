@@ -569,7 +569,7 @@ const handleSubDragEnd = () => {
                   }`}
                 >
                   <div className="flex flex-wrap items-end gap-3 sm:gap-4">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-start pt-1">
                       <span className="cursor-grab text-xl leading-none select-none">
                         ≡
                       </span>
