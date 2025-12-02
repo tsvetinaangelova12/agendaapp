@@ -336,7 +336,7 @@ export default function AgendaMaker() {
 
     let lines = [];
 
-    lines.push("Agenda Maker\n");
+    lines.push("Agenda \n");
 
     events.forEach((ev) => {
 
