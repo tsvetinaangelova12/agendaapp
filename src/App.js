@@ -8,7 +8,9 @@ import {
   Table,
   TableRow,
   TableCell,
-  WidthType
+  WidthType,
+  BorderStyle,
+  TableLayoutType,
 } from "docx";
 import { jsPDF } from "jspdf";
 import { parse, format, addMinutes, differenceInMinutes } from "date-fns";
@@ -408,17 +410,21 @@ const handleSubDragEnd = () => {
   };
 
   const exportAsWord = async () => {
+    // fixed widths in twips (1/20 pt)
+    const TIME_COL_WIDTH = 1500;  // narrow "time" column
+    const TEXT_COL_WIDTH = 8000;  // wide "event" column
+  
     const doc = new Document({
       sections: [
         {
           properties: {},
           children: [
-            // Header line like in the new template
+            // Header line
             new Paragraph({
-              alignment: "left",
+              alignment: "center",
               children: [
                 new TextRun({
-                  text: "Agenda",
+                  text: "Agenda  |  DACStorE Project Meeting  |  15.-16.05.2025  |  Hamburg",
                   bold: true,
                   size: 26,
                 }),
@@ -426,12 +432,10 @@ const handleSubDragEnd = () => {
               spacing: { after: 300 },
             }),
   
-            // Main table: time left, text right
             new Table({
               width: { size: 100, type: WidthType.PERCENTAGE },
-              // narrow time column, wide text column
-              columnWidths: [2000, 8000],
-              // REMOVE ALL BORDERS
+              layout: TableLayoutType.FIXED,
+              columnWidths: [TIME_COL_WIDTH, TEXT_COL_WIDTH],
               borders: {
                 top: { style: BorderStyle.NONE },
                 bottom: { style: BorderStyle.NONE },
@@ -444,11 +448,12 @@ const handleSubDragEnd = () => {
                 ...events.flatMap((ev) => {
                   const rows = [];
   
-                  // MAIN ELEMENT row
+                  // MAIN ELEMENT ROW
                   rows.push(
                     new TableRow({
                       children: [
                         new TableCell({
+                          width: { size: TIME_COL_WIDTH, type: WidthType.DXA },
                           verticalAlign: "center",
                           margins: { left: 200 },
                           children: [
@@ -463,6 +468,7 @@ const handleSubDragEnd = () => {
                           ],
                         }),
                         new TableCell({
+                          width: { size: TEXT_COL_WIDTH, type: WidthType.DXA },
                           verticalAlign: "center",
                           margins: { left: 200 },
                           children: [
@@ -481,13 +487,14 @@ const handleSubDragEnd = () => {
                     })
                   );
   
-                  // SUBELEMENT rows – each as its own line, no bullet
+                  // SUBELEMENT ROWS
                   if (ev.subs && ev.subs.length > 0) {
                     ev.subs.forEach((s) => {
                       rows.push(
                         new TableRow({
                           children: [
                             new TableCell({
+                              width: { size: TIME_COL_WIDTH, type: WidthType.DXA },
                               verticalAlign: "center",
                               margins: { left: 200 },
                               children: [
@@ -502,6 +509,7 @@ const handleSubDragEnd = () => {
                               ],
                             }),
                             new TableCell({
+                              width: { size: TEXT_COL_WIDTH, type: WidthType.DXA },
                               verticalAlign: "center",
                               margins: {
                                 left: 200,
@@ -541,6 +549,7 @@ const handleSubDragEnd = () => {
     const blob = await Packer.toBlob(doc);
     saveAs(blob, "agenda.docx");
   };
+
 
 
   const exportAsOutlook = () => {
