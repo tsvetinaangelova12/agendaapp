@@ -41,11 +41,24 @@ export default function AgendaMaker() {
   };
 
   const nextDefaultTime = (list) => {
-    if (list.length === 0) return "08:00";
-    const last = list[list.length - 1];
-    const d = parseTime(last.time);
-    return formatTime(addMinutes(d, 15));
-  };
+  if (list.length === 0) return "08:00";
+
+  const lastEvent = list[list.length - 1];
+
+  // Start with the main event time
+  let baseTimeStr = lastEvent.time || "08:00";
+
+  // If there are subelements, use the time of the LAST subelement instead
+  if (lastEvent.subs && lastEvent.subs.length > 0) {
+    const lastSub = lastEvent.subs[lastEvent.subs.length - 1];
+    if (lastSub.time) {
+      baseTimeStr = lastSub.time;
+    }
+  }
+
+  const d = parseTime(baseTimeStr);
+  return formatTime(addMinutes(d, 15));
+};
 
   const defaultSubTime = (event) => {
     if (!event.subs || event.subs.length === 0) {
