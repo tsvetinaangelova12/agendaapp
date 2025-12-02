@@ -654,7 +654,7 @@ export default function AgendaMaker() {
                 <span className="text-red-500">♥</span> by Tsvetina
               </span>
               <a
-                href="https://www.linkedin.com/in/YOUR-LINK-HERE"
+                href="www.linkedin.com/in/tsvetina-a-a292a41b4"
                 target="_blank"
                 rel="noreferrer"
                 className="underline underline-offset-4 hover:text-blue-600 dark:hover:text-blue-400"
