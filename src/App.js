@@ -395,150 +395,159 @@ const handleSubDragEnd = () => {
   };
 
   const exportAsWord = async () => {
-    const doc = new Document({
-      sections: [
-        {
-          properties: {},
-          children: [
-            new Paragraph({
-              alignment: "center",
-              children: [
-                new TextRun({
-                  text: "AGENDA",
-                  bold: true,
-                  size: 36,
-                }),
-              ],
-              spacing: { after: 300 },
-            }),
+  const doc = new Document({
+    sections: [
+      {
+        properties: {},
+        children: [
+          new Paragraph({
+            alignment: "center",
+            children: [
+              new TextRun({
+                text: "AGENDA",
+                bold: true,
+                size: 36,
+              }),
+            ],
+            spacing: { after: 300 },
+          }),
 
-            // TABLE
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              rows: [
-                // HEADER ROW
-                new TableRow({
-                  height: { value: 500 },
-                  children: [
-                    new TableCell({
-                      verticalAlign: "center",
-                      children: [
-                        new Paragraph({
-                          alignment: "center",
-                          children: [
-                            new TextRun({
-                              text: "Zeit",
-                              bold: true,
-                              size: 24,
-                            }),
-                          ],
-                        }),
-                      ],
-                    }),
-                    new TableCell({
-                      verticalAlign: "center",
-                      children: [
-                        new Paragraph({
-                          alignment: "center",
-                          children: [
-                            new TextRun({
-                              text: "Event",
-                              bold: true,
-                              size: 24,
-                            }),
-                          ],
-                        }),
-                      ],
-                    }),
-                  ],
-                }),
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              // HEADER — NO PADDING
+              new TableRow({
+                height: { value: 500 },
+                children: [
+                  new TableCell({
+                    verticalAlign: "center",
+                    children: [
+                      new Paragraph({
+                        alignment: "center",
+                        children: [
+                          new TextRun({
+                            text: "Zeit",
+                            bold: true,
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    verticalAlign: "center",
+                    children: [
+                      new Paragraph({
+                        alignment: "center",
+                        children: [
+                          new TextRun({
+                            text: "Event",
+                            bold: true,
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                ],
+              }),
 
-                // BODY ROWS
-                ...events.flatMap((ev) => {
-                  const rows = [];
+              // BODY ROWS
+              ...events.flatMap((ev) => {
+                const rows = [];
 
-                  // MAIN EVENT ROW
+                // MAIN EVENT ROW — WITH LEFT PADDING
+                rows.push(
+                  new TableRow({
+                    height: { value: 500 },
+                    children: [
+                      new TableCell({
+                        verticalAlign: "center",
+                        margins: { left: 200 }, // LEFT padding
+                        children: [
+                          new Paragraph({
+                            children: [
+                              new TextRun({
+                                text: ev.time ? `${ev.time} Uhr` : "",
+                                size: 22,
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+
+                      new TableCell({
+                        verticalAlign: "center",
+                        margins: { left: 200 }, // LEFT padding
+                        children: [
+                          new Paragraph({
+                            children: [
+                              new TextRun({
+                                text: ev.title || "",
+                                size: 22,
+                                bold: true,
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                    ],
+                  })
+                );
+
+                // SUBEVENTS ROW — WITH EXTRA VERTICAL & LEFT PADDING
+                if (ev.subs && ev.subs.length > 0) {
                   rows.push(
                     new TableRow({
-                      height: { value: 500 },
+                      height: { value: 300 },
                       children: [
                         new TableCell({
                           verticalAlign: "center",
-                          width: { size: 20, type: WidthType.PERCENTAGE },
-                          children: [
-                            new Paragraph({
-                              children: [
-                                new TextRun({
-                                  text: ev.time ? `${ev.time} Uhr` : "",
-                                  size: 22,
-                                }),
-                              ],
-                            }),
-                          ],
+                          margins: { left: 200 }, // subtle padding in empty time cell
+                          children: [new Paragraph({ text: "" })],
                         }),
 
                         new TableCell({
                           verticalAlign: "center",
-                          width: { size: 80, type: WidthType.PERCENTAGE },
-                          children: [
-                            new Paragraph({
-                              children: [
-                                new TextRun({
-                                  text: ev.title || "",
-                                  size: 22,
-                                  bold: true,
-                                }),
-                              ],
-                            }),
-                          ],
+                          margins: {
+                            left: 200,   // left padding
+                            top: 150,    // extra spacing above
+                            bottom: 150, // extra spacing below
+                          },
+                          children: ev.subs.map(
+                            (s) =>
+                              new Paragraph({
+                                spacing: {
+                                  before: 80,
+                                  after: 80,
+                                },
+                                children: [
+                                  new TextRun({
+                                    text: `• ${s.time} – ${s.title}`,
+                                    size: 22,
+                                  }),
+                                ],
+                              })
+                          ),
                         }),
                       ],
                     })
                   );
+                }
 
-                  // SUBEVENTS ROW (single cell with bullet list)
-                  if (ev.subs && ev.subs.length > 0) {
-                    rows.push(
-                      new TableRow({
-                        height: { value: 300 },
-                        children: [
-                          new TableCell({
-                            verticalAlign: "center",
-                            children: [
-                              new Paragraph({ text: "" }), // empty time column
-                            ],
-                          }),
-                          new TableCell({
-                            verticalAlign: "center",
-                            children: ev.subs.map(
-                              (s) =>
-                                new Paragraph({
-                                  children: [
-                                    new TextRun({
-                                      text: `• ${s.time} – ${s.title}`,
-                                      size: 22,
-                                    }),
-                                  ],
-                                })
-                            ),
-                          }),
-                        ],
-                      })
-                    );
-                  }
+                return rows;
+              }),
+            ],
+          }),
+        ],
+      },
+    ],
+  });
 
-                  return rows;
-                }),
-              ],
-            }),
-          ],
-        },
-      ],
-    });
+  const blob = await Packer.toBlob(doc);
+  saveAs(blob, "agenda.docx");
+};
 
-    const blob = await Packer.toBlob(doc);
-    saveAs(blob, "agenda.docx");
-  };
 
 
   const exportAsOutlook = () => {
