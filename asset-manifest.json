@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/agendaapp/static/css/main.e6c13ad2.css",
-    "main.js": "/agendaapp/static/js/main.a871c448.js",
+    "main.js": "/agendaapp/static/js/main.aad20348.js",
     "static/js/239.24b9d363.chunk.js": "/agendaapp/static/js/239.24b9d363.chunk.js",
     "static/js/977.9b304277.chunk.js": "/agendaapp/static/js/977.9b304277.chunk.js",
     "static/js/455.cf433cee.chunk.js": "/agendaapp/static/js/455.cf433cee.chunk.js",
     "static/js/453.f38396c6.chunk.js": "/agendaapp/static/js/453.f38396c6.chunk.js",
     "index.html": "/agendaapp/index.html",
     "main.e6c13ad2.css.map": "/agendaapp/static/css/main.e6c13ad2.css.map",
-    "main.a871c448.js.map": "/agendaapp/static/js/main.a871c448.js.map",
+    "main.aad20348.js.map": "/agendaapp/static/js/main.aad20348.js.map",
     "239.24b9d363.chunk.js.map": "/agendaapp/static/js/239.24b9d363.chunk.js.map",
     "977.9b304277.chunk.js.map": "/agendaapp/static/js/977.9b304277.chunk.js.map",
     "455.cf433cee.chunk.js.map": "/agendaapp/static/js/455.cf433cee.chunk.js.map",
@@ -16,6 +16,6 @@
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.a871c448.js"
+    "static/js/main.aad20348.js"
   ]
 }
