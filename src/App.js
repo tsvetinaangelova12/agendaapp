@@ -228,40 +228,42 @@ export default function AgendaMaker() {
   };
 
   const moveEvent = (fromId, toId) => {
-    setEvents((prev) => {
-      if (fromId == null || toId == null || fromId === toId) return prev;
-      const fromIndex = prev.findIndex((e) => e.id === fromId);
-      const toIndex = prev.findIndex((e) => e.id === toId);
-      if (fromIndex === -1 || toIndex === -1) return prev;
-      const copy = [...prev];
-      const [moved] = copy.splice(fromIndex, 1);
-      copy.splice(toIndex, 0, moved);
-      if (copy.length < 2) return copy;
+  setEvents((prev) => {
+    if (fromId == null || toId == null || fromId === toId) return prev;
 
-      let gap = 15;
-      let totalDiff = 0;
-      let count = 0;
-      for (let i = 0; i < prev.length - 1; i++) {
-        const diff = differenceInMinutes(
-          parseTime(prev[i + 1].time),
-          parseTime(prev[i].time)
-        );
-        if (diff > 0) {
-          totalDiff += diff;
-          count++;
-        }
-      }
-      if (count > 0) gap = Math.round(totalDiff / count);
+    const fromIndex = prev.findIndex((e) => e.id === fromId);
+    const toIndex = prev.findIndex((e) => e.id === toId);
+    if (fromIndex === -1 || toIndex === -1) return prev;
 
-      const result = [...copy];
-      for (let i = 1; i < result.length; i++) {
-        const desiredStart = addMinutes(parseTime(result[i - 1].time), gap);
-        const delta = differenceInMinutes(desiredStart, parseTime(result[i].time));
-        result[i] = shiftEventWithSubs(result[i], delta);
-      }
-      return result;
+    // 1) Remember the original main event times
+    const originalTimes = prev.map((ev) => ev.time || "08:00");
+
+    // 2) Sort those times chronologically
+    const sortedTimes = [...originalTimes].sort(
+      (a, b) => parseTime(a) - parseTime(b)
+    );
+
+    // 3) Reorder the events themselves
+    const copy = [...prev];
+    const [moved] = copy.splice(fromIndex, 1);
+    copy.splice(toIndex, 0, moved);
+
+    // 4) Assign the sorted times to the events in their NEW order,
+    //    shifting each event (and its subs) by the appropriate delta
+    const result = copy.map((ev, i) => {
+      const newTimeStr = sortedTimes[i];
+      const currentTimeStr = ev.time || newTimeStr;
+      const delta = differenceInMinutes(
+        parseTime(newTimeStr),
+        parseTime(currentTimeStr)
+      );
+      return shiftEventWithSubs(ev, delta);
     });
-  };
+
+    return result;
+  });
+};
+
 
   const handleDragStart = (e, id) => {
     setDraggingId(id);
