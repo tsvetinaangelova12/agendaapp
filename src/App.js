@@ -431,6 +431,15 @@ const handleSubDragEnd = () => {
               width: { size: 100, type: WidthType.PERCENTAGE },
               // narrow time column, wide text column
               columnWidths: [2000, 8000],
+              // REMOVE ALL BORDERS
+              borders: {
+                top: { style: BorderStyle.NONE },
+                bottom: { style: BorderStyle.NONE },
+                left: { style: BorderStyle.NONE },
+                right: { style: BorderStyle.NONE },
+                insideHorizontal: { style: BorderStyle.NONE },
+                insideVertical: { style: BorderStyle.NONE },
+              },
               rows: [
                 ...events.flatMap((ev) => {
                   const rows = [];
