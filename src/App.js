@@ -615,7 +615,7 @@ const handleSubDragEnd = () => {
           <header className="flex items-center justify-between mb-6">
             <div className="text-center flex-1">
               <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-                An Agenda Maker
+                Dhana's Agenda Maker
               </h1>
               <p className="mt-1 text-xs sm:text-sm opacity-70">
                 Plane dein Meeting genau wie Du willst ^^!
