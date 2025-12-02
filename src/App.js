@@ -421,10 +421,10 @@ const handleSubDragEnd = () => {
           children: [
             // Header line
             new Paragraph({
-              alignment: "center",
+              alignment: "left",
               children: [
                 new TextRun({
-                  text: "Agenda  |  DACStorE Project Meeting  |  15.-16.05.2025  |  Hamburg",
+                  text: "Agenda ",
                   bold: true,
                   size: 26,
                 }),
