@@ -410,45 +410,88 @@ const handleSubDragEnd = () => {
   };
 
   const exportAsWord = async () => {
-    // fixed widths in twips (1/20 pt)
-    const TIME_COL_WIDTH = 1500;  // narrow "time" column
-    const TEXT_COL_WIDTH = 8000;  // wide "event" column
-  
-    const doc = new Document({
-      sections: [
-        {
-          properties: {},
-          children: [
-            // Header line
-            new Paragraph({
-              alignment: "left",
-              children: [
-                new TextRun({
-                  text: "Agenda ",
-                  bold: true,
-                  size: 26,
-                }),
-              ],
-              spacing: { after: 300 },
-            }),
-  
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              layout: TableLayoutType.FIXED,
-              columnWidths: [TIME_COL_WIDTH, TEXT_COL_WIDTH],
-              borders: {
-                top: { style: BorderStyle.NONE },
-                bottom: { style: BorderStyle.NONE },
-                left: { style: BorderStyle.NONE },
-                right: { style: BorderStyle.NONE },
-                insideHorizontal: { style: BorderStyle.NONE },
-                insideVertical: { style: BorderStyle.NONE },
-              },
-              rows: [
-                ...events.flatMap((ev) => {
-                  const rows = [];
-  
-                  // MAIN ELEMENT ROW
+  // fixed widths in twips (1/20 pt)
+  const TIME_COL_WIDTH = 1500;  // narrow "time" column
+  const TEXT_COL_WIDTH = 8000;  // wide "event" column
+
+  const doc = new Document({
+    sections: [
+      {
+        properties: {},
+        children: [
+          // Header line
+          new Paragraph({
+            alignment: "center",
+            children: [
+              new TextRun({
+                text: "Agenda  |  DACStorE Project Meeting  |  15.-16.05.2025  |  Hamburg",
+                bold: true,
+                size: 26,
+              }),
+            ],
+            spacing: { after: 300 },
+          }),
+
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            layout: TableLayoutType.FIXED,
+            columnWidths: [TIME_COL_WIDTH, TEXT_COL_WIDTH],
+            borders: {
+              top: { style: BorderStyle.NONE },
+              bottom: { style: BorderStyle.NONE },
+              left: { style: BorderStyle.NONE },
+              right: { style: BorderStyle.NONE },
+              insideHorizontal: { style: BorderStyle.NONE },
+              insideVertical: { style: BorderStyle.NONE },
+            },
+            rows: [
+              ...events.flatMap((ev) => {
+                const rows = [];
+
+                // MAIN ELEMENT ROW
+                rows.push(
+                  new TableRow({
+                    children: [
+                      new TableCell({
+                        width: { size: TIME_COL_WIDTH, type: WidthType.DXA },
+                        verticalAlign: "center",
+                        margins: { left: 200 },
+                        children: [
+                          new Paragraph({
+                            children: [
+                              new TextRun({
+                                text: ev.time ? formatToAmPm(ev.time) : "",
+                                size: 22,
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                      new TableCell({
+                        width: { size: TEXT_COL_WIDTH, type: WidthType.DXA },
+                        verticalAlign: "center",
+                        margins: { left: 200 },
+                        children: [
+                          new Paragraph({
+                            children: [
+                              new TextRun({
+                                text: ev.title || "",
+                                size: 22,
+                                bold: true,
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                    ],
+                  })
+                );
+
+                // SUBELEMENTS ROW:
+                // - first column empty
+                // - second column: all subs as separate lines in one cell,
+                //   formatted as "• 11:35 am - title"
+                if (ev.subs && ev.subs.length > 0) {
                   rows.push(
                     new TableRow({
                       children: [
@@ -456,99 +499,52 @@ const handleSubDragEnd = () => {
                           width: { size: TIME_COL_WIDTH, type: WidthType.DXA },
                           verticalAlign: "center",
                           margins: { left: 200 },
-                          children: [
-                            new Paragraph({
-                              children: [
-                                new TextRun({
-                                  text: ev.time ? formatToAmPm(ev.time) : "",
-                                  size: 22,
-                                }),
-                              ],
-                            }),
-                          ],
+                          children: [new Paragraph({ text: "" })],
                         }),
                         new TableCell({
                           width: { size: TEXT_COL_WIDTH, type: WidthType.DXA },
                           verticalAlign: "center",
-                          margins: { left: 200 },
-                          children: [
-                            new Paragraph({
-                              children: [
-                                new TextRun({
-                                  text: ev.title || "",
-                                  size: 22,
-                                  bold: true,
-                                }),
-                              ],
-                            }),
-                          ],
+                          margins: {
+                            left: 200,
+                            top: 150,
+                            bottom: 150,
+                          },
+                          children: ev.subs.map(
+                            (s) =>
+                              new Paragraph({
+                                spacing: {
+                                  before: 80,
+                                  after: 80,
+                                },
+                                children: [
+                                  new TextRun({
+                                    text: `• ${s.time ? formatToAmPm(s.time) : ""} - ${
+                                      s.title || ""
+                                    }`,
+                                    size: 22,
+                                  }),
+                                ],
+                              })
+                          ),
                         }),
                       ],
                     })
                   );
-  
-                  // SUBELEMENT ROWS
-                  if (ev.subs && ev.subs.length > 0) {
-                    ev.subs.forEach((s) => {
-                      rows.push(
-                        new TableRow({
-                          children: [
-                            new TableCell({
-                              width: { size: TIME_COL_WIDTH, type: WidthType.DXA },
-                              verticalAlign: "center",
-                              margins: { left: 200 },
-                              children: [
-                                new Paragraph({
-                                  children: [
-                                    new TextRun({
-                                      text: s.time ? formatToAmPm(s.time) : "",
-                                      size: 22,
-                                    }),
-                                  ],
-                                }),
-                              ],
-                            }),
-                            new TableCell({
-                              width: { size: TEXT_COL_WIDTH, type: WidthType.DXA },
-                              verticalAlign: "center",
-                              margins: {
-                                left: 200,
-                                top: 150,
-                                bottom: 150,
-                              },
-                              children: [
-                                new Paragraph({
-                                  spacing: {
-                                    before: 80,
-                                    after: 80,
-                                  },
-                                  children: [
-                                    new TextRun({
-                                      text: s.title || "",
-                                      size: 22,
-                                    }),
-                                  ],
-                                }),
-                              ],
-                            }),
-                          ],
-                        })
-                      );
-                    });
-                  }
-  
-                  return rows;
-                }),
-              ],
-            }),
-          ],
-        },
-      ],
-    });
-  
-    const blob = await Packer.toBlob(doc);
-    saveAs(blob, "agenda.docx");
-  };
+                }
+
+                return rows;
+              }),
+            ],
+          }),
+        ],
+      },
+    ],
+  });
+
+  const blob = await Packer.toBlob(doc);
+  saveAs(blob, "agenda.docx");
+};
+
 
 
 
