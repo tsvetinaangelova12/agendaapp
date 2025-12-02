@@ -26,6 +26,19 @@ export default function AgendaMaker() {
   const parseTime = (hhmm) => parse(hhmm, "HH:mm", new Date());
   const formatTime = (date) => format(date, "HH:mm");
 
+  const formatToAmPm = (hhmm) => {
+    if (!hhmm) return "";
+    const [hStr, mStr] = hhmm.split(":");
+    let h = parseInt(hStr, 10);
+    const m = mStr || "00";
+    const suffix = h >= 12 ? "pm" : "am";
+    if (h === 0) h = 12;
+    else if (h > 12) h = h - 12;
+    const hDisplay = h.toString().padStart(2, "0");
+    return `${hDisplay}:${m} ${suffix}`;
+  };
+
+
   const shiftEventWithSubs = (event, deltaMinutes) => {
     if (!deltaMinutes) return event;
     const shiftTime = (timeStr, fallback) => {
@@ -395,158 +408,131 @@ const handleSubDragEnd = () => {
   };
 
   const exportAsWord = async () => {
-  const doc = new Document({
-    sections: [
-      {
-        properties: {},
-        children: [
-          new Paragraph({
-            alignment: "center",
-            children: [
-              new TextRun({
-                text: "AGENDA",
-                bold: true,
-                size: 36,
-              }),
-            ],
-            spacing: { after: 300 },
-          }),
-
-          new Table({
-            width: { size: 100, type: WidthType.PERCENTAGE },
-            // Zeit column smaller, Event column wider
-            columnWidths: [2000, 8000], // ~20% / 80% split
-            rows: [
-              // HEADER ROW (no padding)
-              new TableRow({
-                height: { value: 500 },
-                children: [
-                  new TableCell({
-                    verticalAlign: "center",
-                    children: [
-                      new Paragraph({
-                        alignment: "center",
-                        children: [
-                          new TextRun({
-                            text: "Zeit",
-                            bold: true,
-                            size: 24,
-                          }),
-                        ],
-                      }),
-                    ],
-                  }),
-                  new TableCell({
-                    verticalAlign: "center",
-                    children: [
-                      new Paragraph({
-                        alignment: "center",
-                        children: [
-                          new TextRun({
-                            text: "Event",
-                            bold: true,
-                            size: 24,
-                          }),
-                        ],
-                      }),
-                    ],
-                  }),
-                ],
-              }),
-
-              // BODY ROWS
-              ...events.flatMap((ev) => {
-                const rows = [];
-
-                // MAIN EVENT ROW — with left padding
-                rows.push(
-                  new TableRow({
-                    height: { value: 500 },
-                    children: [
-                      new TableCell({
-                        verticalAlign: "center",
-                        margins: { left: 200 }, // Zeit padding
-                        children: [
-                          new Paragraph({
-                            children: [
-                              new TextRun({
-                                text: ev.time ? `${ev.time} Uhr` : "",
-                                size: 22,
-                              }),
-                            ],
-                          }),
-                        ],
-                      }),
-                      new TableCell({
-                        verticalAlign: "center",
-                        margins: { left: 200 }, // Event padding
-                        children: [
-                          new Paragraph({
-                            children: [
-                              new TextRun({
-                                text: ev.title || "",
-                                size: 22,
-                                bold: true,
-                              }),
-                            ],
-                          }),
-                        ],
-                      }),
-                    ],
-                  })
-                );
-
-                // SUBEVENT ROW — extra vertical + left padding
-                if (ev.subs && ev.subs.length > 0) {
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: [
+            // Header line like in the new template
+            new Paragraph({
+              alignment: "center",
+              children: [
+                new TextRun({
+                  text: "Agenda  |  DACStorE Project Meeting  |  15.-16.05.2025  |  Hamburg",
+                  bold: true,
+                  size: 26,
+                }),
+              ],
+              spacing: { after: 300 },
+            }),
+  
+            // Main table: time left, text right
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              // narrow time column, wide text column
+              columnWidths: [2000, 8000],
+              rows: [
+                ...events.flatMap((ev) => {
+                  const rows = [];
+  
+                  // MAIN ELEMENT row
                   rows.push(
                     new TableRow({
-                      height: { value: 300 },
                       children: [
                         new TableCell({
                           verticalAlign: "center",
                           margins: { left: 200 },
-                          children: [new Paragraph({ text: "" })],
+                          children: [
+                            new Paragraph({
+                              children: [
+                                new TextRun({
+                                  text: ev.time ? formatToAmPm(ev.time) : "",
+                                  size: 22,
+                                }),
+                              ],
+                            }),
+                          ],
                         }),
                         new TableCell({
                           verticalAlign: "center",
-                          margins: {
-                            left: 200,
-                            top: 150,
-                            bottom: 150,
-                          },
-                          children: ev.subs.map(
-                            (s) =>
-                              new Paragraph({
-                                spacing: {
-                                  before: 80,
-                                  after: 80,
-                                },
-                                children: [
-                                  new TextRun({
-                                    text: `• ${s.time} – ${s.title}`,
-                                    size: 22,
-                                  }),
-                                ],
-                              })
-                          ),
+                          margins: { left: 200 },
+                          children: [
+                            new Paragraph({
+                              children: [
+                                new TextRun({
+                                  text: ev.title || "",
+                                  size: 22,
+                                  bold: true,
+                                }),
+                              ],
+                            }),
+                          ],
                         }),
                       ],
                     })
                   );
-                }
+  
+                  // SUBELEMENT rows – each as its own line, no bullet
+                  if (ev.subs && ev.subs.length > 0) {
+                    ev.subs.forEach((s) => {
+                      rows.push(
+                        new TableRow({
+                          children: [
+                            new TableCell({
+                              verticalAlign: "center",
+                              margins: { left: 200 },
+                              children: [
+                                new Paragraph({
+                                  children: [
+                                    new TextRun({
+                                      text: s.time ? formatToAmPm(s.time) : "",
+                                      size: 22,
+                                    }),
+                                  ],
+                                }),
+                              ],
+                            }),
+                            new TableCell({
+                              verticalAlign: "center",
+                              margins: {
+                                left: 200,
+                                top: 150,
+                                bottom: 150,
+                              },
+                              children: [
+                                new Paragraph({
+                                  spacing: {
+                                    before: 80,
+                                    after: 80,
+                                  },
+                                  children: [
+                                    new TextRun({
+                                      text: s.title || "",
+                                      size: 22,
+                                    }),
+                                  ],
+                                }),
+                              ],
+                            }),
+                          ],
+                        })
+                      );
+                    });
+                  }
+  
+                  return rows;
+                }),
+              ],
+            }),
+          ],
+        },
+      ],
+    });
+  
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, "agenda.docx");
+  };
 
-                return rows;
-              }),
-            ],
-          }),
-        ],
-      },
-    ],
-  });
-
-  const blob = await Packer.toBlob(doc);
-  saveAs(blob, "agenda.docx");
-};
 
   const exportAsOutlook = () => {
     const lines = [];
