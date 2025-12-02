@@ -610,7 +610,7 @@ export default function AgendaMaker() {
 
             <p className="mt-1 text-xs sm:text-sm opacity-70">
 
-              Plane deinen Tag mit Zeiten, Titeln und Unterelementen
+              Plane deinen Tag mit Zeiten und Titeln
 
             </p>
 
