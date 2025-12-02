@@ -395,82 +395,151 @@ const handleSubDragEnd = () => {
   };
 
   const exportAsWord = async () => {
-    const headerParagraph = new Paragraph({
-      children: [
-        new TextRun({
-          text: "An Agenda Maker",
-          bold: true,
-          size: 32
-        })
-      ]
-    });
-
-    const tableRows = [];
-
-    tableRows.push(
-      new TableRow({
+  const doc = new Document({
+    sections: [
+      {
+        properties: {},
         children: [
-          new TableCell({
-            children: [new Paragraph({ text: "Zeit" })]
-          }),
-          new TableCell({
-            children: [new Paragraph({ text: "Thema" })]
-          })
-        ]
-      })
-    );
-
-    events.forEach((ev) => {
-      tableRows.push(
-        new TableRow({
-          children: [
-            new TableCell({
-              children: [new Paragraph({ text: ev.time || "" })]
-            }),
-            new TableCell({
-              children: [new Paragraph({ text: ev.title || "" })]
-            })
-          ]
-        })
-      );
-
-      if (ev.subs && ev.subs.length > 0) {
-        const subTimes = ev.subs.map((s) => s.time || "").join("\n");
-        const subTexts = ev.subs
-          .map((s) => `${s.time || ""} - ${s.title || ""}`)
-          .join("\n");
-        tableRows.push(
-          new TableRow({
+          new Paragraph({
+            alignment: "center",
             children: [
-              new TableCell({
-                children: [new Paragraph({ text: subTimes })]
+              new TextRun({
+                text: "AGENDA",
+                bold: true,
+                size: 36,
               }),
-              new TableCell({
-                children: [new Paragraph({ text: subTexts })]
-              })
-            ]
-          })
-        );
-      }
-    });
+            ],
+            spacing: { after: 300 },
+          }),
 
-    const table = new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: tableRows
-    });
+          // TABLE
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              // HEADER ROW
+              new TableRow({
+                height: { value: 500 },
+                children: [
+                  new TableCell({
+                    verticalAlign: "center",
+                    children: [
+                      new Paragraph({
+                        alignment: "center",
+                        children: [
+                          new TextRun({
+                            text: "Zeit",
+                            bold: true,
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    verticalAlign: "center",
+                    children: [
+                      new Paragraph({
+                        alignment: "center",
+                        children: [
+                          new TextRun({
+                            text: "Event",
+                            bold: true,
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                ],
+              }),
 
-    const doc = new Document({
-      sections: [
-        {
-          properties: {},
-          children: [headerParagraph, new Paragraph({ text: "" }), table]
-        }
-      ]
-    });
+              // BODY ROWS
+              ...events.flatMap((ev) => {
+                const rows = [];
 
-    const blob = await Packer.toBlob(doc);
-    saveAs(blob, "agenda.docx");
-  };
+                // MAIN EVENT ROW
+                rows.push(
+                  new TableRow({
+                    height: { value: 500 },
+                    children: [
+                      new TableCell({
+                        verticalAlign: "center",
+                        width: { size: 20, type: WidthType.PERCENTAGE },
+                        children: [
+                          new Paragraph({
+                            children: [
+                              new TextRun({
+                                text: ev.time ? `${ev.time} Uhr` : "",
+                                size: 22,
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+
+                      new TableCell({
+                        verticalAlign: "center",
+                        width: { size: 80, type: WidthType.PERCENTAGE },
+                        children: [
+                          new Paragraph({
+                            children: [
+                              new TextRun({
+                                text: ev.title || "",
+                                size: 22,
+                                bold: true,
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                    ],
+                  })
+                );
+
+                // SUBEVENTS ROW (single cell with bullet list)
+                if (ev.subs && ev.subs.length > 0) {
+                  rows.push(
+                    new TableRow({
+                      height: { value: 300 },
+                      children: [
+                        new TableCell({
+                          verticalAlign: "center",
+                          children: [
+                            new Paragraph({ text: "" }), // empty time column
+                          ],
+                        }),
+                        new TableCell({
+                          verticalAlign: "center",
+                          children: ev.subs.map(
+                            (s) =>
+                              new Paragraph({
+                                children: [
+                                  new TextRun({
+                                    text: `• ${s.time} – ${s.title}`,
+                                    size: 22,
+                                  }),
+                                ],
+                              })
+                          ),
+                        }),
+                      ],
+                    })
+                  );
+                }
+
+                return rows;
+              }),
+            ],
+          }),
+        ],
+      },
+    ],
+  });
+
+  const blob = await Packer.toBlob(doc);
+  saveAs(blob, "agenda.docx");
+};
+
 
   const exportAsOutlook = () => {
     const lines = [];
