@@ -421,6 +421,7 @@ const handleSubDragEnd = () => {
                   children: [
                     new TableCell({
                       verticalAlign: "center",
+                      width: { size: 25, type: WidthType.PERCENTAGE },
                       children: [
                         new Paragraph({
                           alignment: "center",
@@ -436,6 +437,7 @@ const handleSubDragEnd = () => {
                     }),
                     new TableCell({
                       verticalAlign: "center",
+                      width: { size: 25, type: WidthType.PERCENTAGE },
                       children: [
                         new Paragraph({
                           alignment: "center",
@@ -463,6 +465,7 @@ const handleSubDragEnd = () => {
                       children: [
                         new TableCell({
                           verticalAlign: "center",
+                          width: { size: 25, type: WidthType.PERCENTAGE },
                           margins: { left: 200 }, // LEFT padding
                           children: [
                             new Paragraph({
@@ -478,6 +481,7 @@ const handleSubDragEnd = () => {
 
                         new TableCell({
                           verticalAlign: "center",
+                          width: { size: 25, type: WidthType.PERCENTAGE },
                           margins: { left: 200 }, // LEFT padding
                           children: [
                             new Paragraph({
@@ -503,12 +507,14 @@ const handleSubDragEnd = () => {
                         children: [
                           new TableCell({
                             verticalAlign: "center",
+                            width: { size: 25, type: WidthType.PERCENTAGE },
                             margins: { left: 200 }, // subtle padding in empty time cell
                             children: [new Paragraph({ text: "" })],
                           }),
 
                           new TableCell({
                             verticalAlign: "center",
+                            width: { size: 25, type: WidthType.PERCENTAGE },
                             margins: {
                               left: 200,   // left padding
                               top: 150,    // extra spacing above
