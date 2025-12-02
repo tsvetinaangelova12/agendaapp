@@ -647,14 +647,9 @@ const handleSubDragEnd = () => {
                               : ""
                           }`}
                         >
-                          <div className="flex items-center gap-2">
-                            <span className="cursor-grab text-lg leading-none select-none">
-                              ≡
-                            </span>
-                            <span className="select-none text-lg leading-none">
-                              •
-                            </span>
-                          </div>
+                          <span className="cursor-grab text-lg leading-none select-none">
+                            ≡
+                          </span>
 
                           <div className="w-24 sm:w-28">
                             <label className="text-[10px] uppercase tracking-wide opacity-60">
