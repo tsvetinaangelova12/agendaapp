@@ -112,19 +112,41 @@ export default function AgendaMaker() {
   };
 
   const addSubTo = (index) => {
-    setEvents((prev) => {
-      const copy = [...prev];
-      const event = copy[index];
-      const newSub = {
-        id: Date.now() + Math.random(),
-        time: defaultSubTime(event),
-        title: ""
-      };
-      const subs = [...event.subs, newSub];
-      copy[index] = { ...event, subs };
-      return copy;
-    });
-  };
+  setEvents((prev) => {
+    const copy = [...prev];
+    const event = copy[index];
+
+    // 1) Calculate the new subelement time as before
+    const newSubTimeStr = defaultSubTime(event);
+    const newSub = {
+      id: Date.now() + Math.random(),
+      time: newSubTimeStr,
+      title: ""
+    };
+
+    // 2) Add the new subelement to this event
+    const updatedSubs = [...event.subs, newSub];
+    copy[index] = { ...event, subs: updatedSubs };
+
+    // 3) If there is a next main event, check for overlap
+    const nextIndex = index + 1;
+    if (nextIndex < copy.length) {
+      const newSubTime = parseTime(newSubTimeStr);
+      const nextMainTime = parseTime(copy[nextIndex].time);
+
+      // If the new sub reaches or passes the next main event time,
+      // shift the next main and all following events (with subs) by +15 min
+      if (newSubTime >= nextMainTime) {
+        for (let i = nextIndex; i < copy.length; i++) {
+          copy[i] = shiftEventWithSubs(copy[i], 15);
+        }
+      }
+    }
+
+    return copy;
+  });
+};
+
 
   const updateSub = (evIndex, subIndex, partial) => {
     setEvents((prev) => {
@@ -138,15 +160,31 @@ export default function AgendaMaker() {
   };
 
   const changeSubTime = (evIndex, subIndex, newTimeStr) => {
-    setEvents((prev) => {
-      const copy = [...prev];
-      const event = copy[evIndex];
-      const subs = [...event.subs];
-      subs[subIndex] = { ...subs[subIndex], time: newTimeStr };
-      copy[evIndex] = { ...event, subs };
-      return copy;
-    });
-  };
+  setEvents((prev) => {
+    const copy = [...prev];
+    const event = copy[evIndex];
+    const subs = [...event.subs];
+
+    subs[subIndex] = { ...subs[subIndex], time: newTimeStr };
+    copy[evIndex] = { ...event, subs };
+
+    // Check if this change now clashes with the next main event
+    const nextIndex = evIndex + 1;
+    if (nextIndex < copy.length) {
+      const newSubTime = parseTime(newTimeStr);
+      const nextMainTime = parseTime(copy[nextIndex].time);
+
+      if (newSubTime >= nextMainTime) {
+        for (let i = nextIndex; i < copy.length; i++) {
+          copy[i] = shiftEventWithSubs(copy[i], 15);
+        }
+      }
+    }
+
+    return copy;
+  });
+};
+
 
   const removeEvent = (index) => {
     setEvents((prev) => prev.filter((_, i) => i !== index));
