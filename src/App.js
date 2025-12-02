@@ -618,7 +618,7 @@ const handleSubDragEnd = () => {
                 An Agenda Maker
               </h1>
               <p className="mt-1 text-xs sm:text-sm opacity-70">
-                Plane deinen Tag mit Zeiten, Titeln und Unterelementen
+                Plane dein Meeting genau wie Du willst ^^!
               </p>
             </div>
             <button
